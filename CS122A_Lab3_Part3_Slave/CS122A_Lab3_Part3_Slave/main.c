@@ -76,9 +76,9 @@ unsigned char testvar = 'u';
 unsigned char portd_var = 0x00;
 unsigned char testChar = 0x33;
 unsigned char readKey = '\0';
-unsigned char period_length=2;
+unsigned char period_length=40;
 unsigned char counter=0x00;
-unsigned char pattern_mode=2;
+unsigned char pattern_mode=1;
 unsigned char time_mode=1;
 void Tick(){
 	switch (state){	//Transitions
@@ -94,7 +94,7 @@ void Tick(){
 	switch (state){	//State Actions
 		
 		case Start:
-			receivedData = SPI_Transmit(testChar);
+			//receivedData = SPI_Transmit(testChar);
 			pattern_mode=receivedData&0x0F;
             time_mode=(receivedData&0xF0)>>4;
             if(time_mode==1)
@@ -185,6 +185,143 @@ void Tick_SM2(){
         default:break;
     }
 } 
+enum sm_pattern3{start3,state_31,state_32} sm3;
+void Tick_SM3(){
+    switch(sm3){
+        case start3:
+        sm3=state_31;
+        break;
+        case state_31:
+        if(counter<period_length)
+        counter++;
+        else{
+            counter=0;
+            sm3=state_32;
+        }
+        break;
+        case state_32:
+        if(counter<period_length)
+        counter++;
+        else{
+            counter=0;
+            sm3=state_31;
+        }
+        break;
+        default:break;
+    }
+    switch(sm3){
+        case state_31:
+        PORTD=0xAA;
+        break;
+        case state_32:
+        PORTD=0x55;
+        break;
+        default:break;
+    }
+}
+enum sm_pattern4{start4,state_41,state_42,state_43,state_44,state_45,state_46,state_47,state_48} sm4;
+void Tick_SM4(){
+    switch(sm4){
+        case start4:
+        sm4=state_41;
+        break;
+        
+        case state_41:
+        if(counter<period_length)
+        counter++;
+        else{
+            counter=0;
+            sm4=state_42;
+        }
+        break;
+        
+        case state_42:
+        if(counter<period_length)
+        counter++;
+        else{
+            counter=0;
+            sm4=state_43;
+        }
+        break;
+                case state_43:
+                if(counter<period_length)
+                counter++;
+                else{
+                    counter=0;
+                    sm4=state_44;
+                }
+                break;
+                        case state_44:
+                        if(counter<period_length)
+                        counter++;
+                        else{
+                            counter=0;
+                            sm4=state_45;
+                        }
+                        break;
+                                case state_45:
+                                if(counter<period_length)
+                                counter++;
+                                else{
+                                    counter=0;
+                                    sm4=state_46;
+                                }
+                                break;
+                                case state_46:
+                                if(counter<period_length)
+                                counter++;
+                                else{
+                                    counter=0;
+                                    sm4=state_47;
+                                }
+                                break;
+                                        case state_47:
+                                        if(counter<period_length)
+                                        counter++;
+                                        else{
+                                            counter=0;
+                                            sm4=state_48;
+                                        }
+                                        break;
+                                                case state_48:
+                                                if(counter<period_length)
+                                                counter++;
+                                                else{
+                                                    counter=0;
+                                                    sm4=state_41;
+                                                }
+                                                break;
+        default:break;
+    }
+    switch(sm4){
+        case state_41:
+        PORTD=0x01;
+        break;
+        case state_42:
+        PORTD=0x02;
+        break;
+        case state_43:
+        PORTD=0x04;
+        break;
+        case state_44:
+        PORTD=0x08;
+        break;
+        case state_45:
+        PORTD=0x10;
+        break;
+        case state_46:
+        PORTD=0x20;
+        break;
+        case state_47:
+        PORTD=0x40;
+        break;
+        case state_48:
+        PORTD=0x80;
+        break;
+        default:break;
+    }
+}
+
 int main(void)
 {
 	DDRD=0xFF;PORTD=0x00;
@@ -196,20 +333,23 @@ int main(void)
 	state = Start;
 	sm1=start1;
     sm2=start2;
+    sm3=start3;
+    sm4=start4;
 	SPI_SlaveInit();
 	
 	while(1)
 	{
 		Tick();
+        
 		switch(pattern_mode){
             case 1:
                 Tick_SM1();
                 break;
             case 2:
-                Tick_SM2();
+                Tick_SM3();
                 break;
             case 3:
-                Tick_SM1();
+                Tick_SM4();
                 break;
             case 4:
                 Tick_SM2();
